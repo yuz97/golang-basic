@@ -33,13 +33,15 @@ func main() {
 
 	userRepository := user.NewRepository(config.DB)
 	userService := user.NewService(userRepository)
+
 	userHandler := handler.NewUserHandler(userService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
 	{
 		//user auth
-		api.POST("/users", userHandler.RegisterUser)
+		api.POST("/register", userHandler.RegisterUser)
+		api.POST("/login", userHandler.LoginUser)
 
 	}
 
@@ -48,10 +50,9 @@ func main() {
 	// layer structure
 	/**
 	- input  => tipe data utk inputan
-	- handler mapping input ke struct => balikan response
-	- service mapping ke struct User => controller
-	- repository save struct user ke db  => model /bisnis logic
-	db
+	- handler mapping input ke struct => controller balikan response
+	- service mapping ke struct User =>  bisnis logic
+	- repository save struct user ke db  => model (database)
 
 	*/
 

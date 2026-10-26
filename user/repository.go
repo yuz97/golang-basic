@@ -5,6 +5,8 @@ import "gorm.io/gorm"
 type Repository interface {
 	Save(user User) (User, error) //Save nama method ,user nama package,User nama model/entity struct,(User, error) nilai yg harus direturn
 	FindByEmail(email string) (User, error)
+	FindByID(ID int) (User, error)
+	Update(user User) (User, error)
 }
 
 // tidak bisa diakses dari luar /internal struct
@@ -30,6 +32,24 @@ func (r *repository) FindByEmail(email string) (User, error) {
 	err := r.db.Where("email = ?", email).Find(&user).Error
 	if err != nil {
 
+	}
+	return user, nil
+}
+
+func (r *repository) FindByID(ID int) (User, error) {
+	var user User
+
+	err := r.db.Where("ID = ?", ID).Find(&user).Error
+	if err != nil {
+
+	}
+	return user, nil
+}
+
+func (r *repository) Update(user User) (User, error) {
+	err := r.db.Save(&user).Error
+	if err != nil {
+		return user, err
 	}
 	return user, nil
 }

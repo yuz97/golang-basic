@@ -31,6 +31,18 @@ func main() {
 	// }
 	// userRepository.Save(user)
 
+	//uji coba layer
+	/**
+	checkEmail, err := userService.IsEmailAvailable(user.CheckEmailInput{
+		Email: "rudi@gmail.com",
+	})
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(checkEmail)
+
+	*/
+
 	userRepository := user.NewRepository(config.DB)
 	userService := user.NewService(userRepository)
 
@@ -42,6 +54,8 @@ func main() {
 		//user auth
 		api.POST("/register", userHandler.RegisterUser)
 		api.POST("/login", userHandler.LoginUser)
+		api.POST("/email_checkers", userHandler.CheckEmailAvailability)
+		api.POST("/avatars", userHandler.UploadAvatar)
 
 	}
 

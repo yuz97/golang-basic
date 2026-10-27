@@ -1,14 +1,23 @@
 package main
 
 import (
+	"fmt"
+	"golang-dasar/auth"
 	"golang-dasar/config"
 	"golang-dasar/handler"
 	"golang-dasar/user"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	//pangil godotenv utk memuat semua file .env
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("gagal load file .env: ", err)
+	}
 
 	config.ConnectDB()
 
@@ -45,8 +54,20 @@ func main() {
 
 	userRepository := user.NewRepository(config.DB)
 	userService := user.NewService(userRepository)
+	authService := auth.NewService()
+	// fmt.Println(authService.GenerateToken(100)) //manual generate token
+	token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTMyMDIxMDcsInN1YiI6Mn0.M_UK44fEI98O2ffZaKRcA3Tj8GBuHTEzgyJFkvccwOc")
+	if err != nil {
+		fmt.Println("token tidak sama")
+	}
 
-	userHandler := handler.NewUserHandler(userService)
+	if token.Valid {
+		fmt.Println("berhasil")
+	} else {
+		fmt.Println("gagal!")
+	}
+
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")

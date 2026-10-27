@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"golang-dasar/auth"
 	"golang-dasar/helper"
 	"golang-dasar/user"
 	"net/http"
@@ -14,10 +15,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService}
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userService, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -47,8 +49,15 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	//token,err := h.jwtService.GenerateToken()
-	formatter := user.FormatUser(newUser, "token")
+	//buat token
+	token, err := h.authService.GenerateToken(int(newUser.ID))
+	if err != nil {
+		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := user.FormatUser(newUser, token)
 
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "success", formatter)
 	c.JSON(http.StatusOK, response)
@@ -84,7 +93,15 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	formatter := user.FormatUser(userData, "token")
+	//buat token
+	token, err := h.authService.GenerateToken(int(userData.ID))
+	if err != nil {
+		response := helper.APIResponse("Login account failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	formatter := user.FormatUser(userData, token)
+
 	response := helper.APIResponse("Successfully login!", http.StatusOK, "success", formatter)
 	c.JSON(http.StatusOK, response)
 

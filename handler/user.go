@@ -172,7 +172,9 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	userID := 1
+	//dapatkan userId berdasarkan token passing currentUser yg sudah dibuat di middleware
+	currentUser := c.MustGet("currentUser").(user.User)
+	userID := int(currentUser.ID)
 
 	//simpan file dengan generate nama file agar tidak tumpang tindih
 	// path := "images/" + file.Filename

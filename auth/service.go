@@ -23,12 +23,12 @@ func NewService() *jwtService {
 
 func (s *jwtService) GenerateToken(userID int) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": userID,
-		"exp": time.Now().Add(time.Hour * 24 * 1).Unix(), //expired 24 jam = 1 hari
+	claim := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 24 * 1).Unix(), //expired 24 jam = 1 hari
 	})
 
-	tokenString, err := token.SignedString([]byte(secret))
+	tokenString, err := claim.SignedString([]byte(secret))
 
 	if err != nil {
 		return tokenString, err
@@ -41,7 +41,7 @@ func (s *jwtService) GenerateToken(userID int) (string, error) {
 func (s *jwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
 
 	secret := os.Getenv("JWT_SECRET")
-	token, err := jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
+	claim, err := jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 
 		if !ok {
@@ -52,8 +52,8 @@ func (s *jwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	})
 
 	if err != nil {
-		return token, err
+		return claim, err
 	}
 
-	return token, nil
+	return claim, nil
 }

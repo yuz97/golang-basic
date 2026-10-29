@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"golang-dasar/auth"
+	"golang-dasar/campaign"
 	"golang-dasar/config"
 	"golang-dasar/handler"
 	"golang-dasar/helper"
@@ -56,6 +58,10 @@ func main() {
 	*/
 
 	userRepository := user.NewRepository(config.DB)
+	campaignRepository := campaign.NewRepository(config.DB)
+	campaigns, _ := campaignRepository.FindAll()
+
+	fmt.Println(len(campaigns))
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 	// fmt.Println(authService.GenerateToken(100)) //manual generate token

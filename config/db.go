@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"golang-dasar/campaign"
 	"golang-dasar/user"
 	"log"
 	"os"
@@ -27,7 +28,7 @@ func ConnectDB() {
 		log.Fatal("failed  connect to database", err)
 	}
 
-	err = database.AutoMigrate(&user.User{})
+	err = database.AutoMigrate(&user.User{}, &campaign.Campaign{}, &campaign.CampaignImage{})
 	if err != nil {
 		log.Fatal("failed migrate to database", err)
 	}

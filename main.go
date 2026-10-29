@@ -6,13 +6,10 @@ import (
 	"golang-dasar/campaign"
 	"golang-dasar/config"
 	"golang-dasar/handler"
-	"golang-dasar/helper"
+	"golang-dasar/middleware"
 	"golang-dasar/user"
 	"log"
-	"net/http"
-	"strings"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -59,10 +56,9 @@ func main() {
 
 	userRepository := user.NewRepository(config.DB)
 	campaignRepository := campaign.NewRepository(config.DB)
-	campaigns, _ := campaignRepository.FindAll()
 
-	fmt.Println(len(campaigns))
 	userService := user.NewService(userRepository)
+	campaignService := campaign.NewService(campaignRepository)
 	authService := auth.NewService()
 	// fmt.Println(authService.GenerateToken(100)) //manual generate token
 	// token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTMyMDIxMDcsInN1YiI6Mn0.M_UK44fEI98O2ffZaKRcA3Tj8GBuHTEzgyJFkvccwOc")
@@ -75,6 +71,8 @@ func main() {
 	// } else {
 	// 	fmt.Println("gagal!")
 	// }
+	campaigns, _ := campaignService.FindCampaigns(2)
+	fmt.Println(len(campaigns))
 
 	userHandler := handler.NewUserHandler(userService, authService)
 
@@ -85,7 +83,7 @@ func main() {
 		api.POST("/register", userHandler.RegisterUser)
 		api.POST("/login", userHandler.LoginUser)
 		api.POST("/email_checkers", userHandler.CheckEmailAvailability)
-		api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
+		api.POST("/avatars", middleware.AuthMiddleware(authService, userService), userHandler.UploadAvatar)
 
 	}
 
@@ -100,57 +98,4 @@ func main() {
 
 	*/
 
-}
-
-// ambil nilai header Authorization Header -> Bearer token
-// dr header authorization kita ambil tokennya saja
-// validasi token -> ambil userId -> ambil user di DB berdasarkan userId lewat service
-// set context isinya user
-func authMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-
-		if authHeader == "" || !strings.Contains(authHeader, "Bearer") {
-			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-		//Bearer token
-		tokenString := ""
-		arrToken := strings.Split(authHeader, " ")
-		if len(arrToken) == 2 {
-			tokenString = arrToken[1]
-		}
-
-		//validasi token
-		token, err := authService.ValidateToken(tokenString)
-		if err != nil {
-			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		claim, ok := token.Claims.(jwt.MapClaims)
-
-		if !ok || !token.Valid {
-			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		//ubah  jwt.claims jadi int
-		userID := int(claim["user_id"].(float64))
-
-		//cari data user berdasarkan userId
-		user, err := userService.GetUserByID(userID)
-		if err != nil {
-			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		//set context isinya user -> currentUser (user yg sedang aktif saat ini)
-		c.Set("currentUser", user)
-
-	}
 }

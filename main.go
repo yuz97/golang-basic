@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"golang-dasar/auth"
 	"golang-dasar/campaign"
 	"golang-dasar/config"
@@ -54,9 +53,11 @@ func main() {
 
 	*/
 
+	//repository
 	userRepository := user.NewRepository(config.DB)
 	campaignRepository := campaign.NewRepository(config.DB)
 
+	//service
 	userService := user.NewService(userRepository)
 	campaignService := campaign.NewService(campaignRepository)
 	authService := auth.NewService()
@@ -71,10 +72,10 @@ func main() {
 	// } else {
 	// 	fmt.Println("gagal!")
 	// }
-	campaigns, _ := campaignService.FindCampaigns(2)
-	fmt.Println(len(campaigns))
 
+	//handler
 	userHandler := handler.NewUserHandler(userService, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
@@ -84,6 +85,9 @@ func main() {
 		api.POST("/login", userHandler.LoginUser)
 		api.POST("/email_checkers", userHandler.CheckEmailAvailability)
 		api.POST("/avatars", middleware.AuthMiddleware(authService, userService), userHandler.UploadAvatar)
+
+		//campaigns
+		api.GET("/campaigns", campaignHandler.GetCampaigns)
 
 	}
 

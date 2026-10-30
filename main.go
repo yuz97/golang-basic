@@ -78,6 +78,8 @@ func main() {
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
+	//ambil gambar static
+	router.Static("/images", "./images") // "./images" -> lokasi folder
 	api := router.Group("/api/v1")
 	{
 		//user auth

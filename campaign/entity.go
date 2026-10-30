@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	"golang-dasar/user"
 	"time"
 )
 
@@ -17,7 +18,8 @@ type Campaign struct {
 	Slug             string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
-	CampaignImages   []CampaignImage //berelasi
+	CampaignImages   []CampaignImage //berelasi dengan CampaignImage
+	User             user.User       //berelasi dengan User
 }
 
 type CampaignImage struct {

@@ -12,5 +12,5 @@ type CreateCampaignInput struct {
 	Description      string    `json:"description" binding:"required"`
 	GoalAmount       int       `json:"goal_amount" binding:"required"`
 	Perks            string    `json:"perks" binding:"required"`
-	User             user.User `json:"-"` //berdasarkan user yg create campaign jd butuh jwt gak usah kirim data ke json
+	User             user.User `json:"user"` //berdasarkan user yg create campaign jd butuh jwt gak usah kirim data ke json
 }

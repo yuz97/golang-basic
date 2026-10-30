@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -11,6 +12,7 @@ type Service interface {
 	GetCampaigns(userID int) ([]Campaign, error)
 	GetCampaignByID(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
+	UpdateCampaign(inputID GetCampaignDetailInput, inputData CreateCampaignInput) (Campaign, error)
 }
 
 type service struct {
@@ -67,4 +69,35 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 		return newCampaign, err
 	}
 	return newCampaign, nil
+}
+
+func (s *service) UpdateCampaign(input GetCampaignDetailInput, inputData CreateCampaignInput) (Campaign, error) {
+	//find by ID
+	campaign, err := s.repository.FindByID(input.ID)
+	if err != nil {
+		return campaign, err
+	}
+
+	//cegah agar campaign hanya dibuat user dengan authorization sama (owner)
+	if campaign.UserID != inputData.User.ID {
+		return campaign, errors.New("Not an owner of the campaign!")
+	}
+
+	//update data
+	campaign.Title = inputData.Title
+	campaign.ShortDescription = inputData.Title
+	campaign.Description = inputData.Description
+	campaign.Perks = inputData.Perks
+	campaign.GoalAmount = inputData.GoalAmount
+
+	//update slug
+	strSlug := fmt.Sprintf("%s %s", inputData.Title, strconv.Itoa(inputData.User.ID))
+	campaign.Slug = slug.Make(strSlug)
+
+	// save kedatabase
+	updatedCampaign, err := s.repository.Update(campaign)
+	if err != nil {
+		return updatedCampaign, err
+	}
+	return updatedCampaign, nil
 }

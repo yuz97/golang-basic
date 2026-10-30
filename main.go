@@ -92,6 +92,7 @@ func main() {
 		api.GET("/campaigns", campaignHandler.GetCampaigns)
 		api.POST("/campaigns", middleware.AuthMiddleware(authService, userService), campaignHandler.CreateCampaign)
 		api.GET("/campaigns/:id", campaignHandler.GetCampaignByID)
+		api.PUT("/campaigns/:id", middleware.AuthMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 
 	}
 
